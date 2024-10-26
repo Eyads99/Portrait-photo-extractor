@@ -36,11 +36,13 @@ class Portrait(Resource):
         return {"message": "This endpoint only accepts GET requests with images"}
     
     def get(self):
-        try:
+        try:            
             args = portrait_request_args.parse_args()
             
             image_file = args['image']
             
+            if image_file and image_file.filename.split('.')[-1].lower() not in ['png', 'jpg', 'jpeg']:
+                abort(400, message="Invalid image type. Only PNG, JPG, JPEG are supported")            
             # Convert the uploaded file to an image array
             file_bytes = np.frombuffer(image_file.read(), np.uint8)
             image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
@@ -65,7 +67,7 @@ class Portrait(Resource):
             )
             
             if len(faces) == 0:
-                abort(400, error="No faces detected in the image")            
+                abort(400, message="No faces detected in the image")            
             
             # Get the first face detected
             x, y, w, h = faces[0]
@@ -96,7 +98,7 @@ class Portrait(Resource):
                     image_file.write(image_base64)
         
         except Exception as e: # in case of any unexpected errors
-          abort(500, error="Internal server error")
+          abort(500, message="Internal server error: " + str(e))
           
         return {"base64_image": image_base64, "single_portrait": len(faces)==1}
 
