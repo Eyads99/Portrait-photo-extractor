@@ -10,5 +10,6 @@ COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 5000
-# Command to run your Python script
-CMD ["python", "/app/api.py"]
+
+# run Python script
+CMD ["python", "-u", "api.py"]
