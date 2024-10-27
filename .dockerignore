@@ -1,0 +1,16 @@
+.venv/
+.env
+__pycache__/
+.Python
+.git
+.gitignore
+*.pyc
+*.pyo
+*.pyd
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+*.pdf
