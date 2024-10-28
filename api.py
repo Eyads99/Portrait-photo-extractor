@@ -15,7 +15,7 @@ portrait_request_args.add_argument("image", type=FileStorage, help="Image with a
 
 @app.route("/docs")
 def docs():
-    return  """
+    return  f"""
         /portrait_extract/ 
     - Description: Extracts and processes portrait images.
     - Required Parameters: 
@@ -26,18 +26,38 @@ def docs():
             
 
 class Portrait(Resource):
-    def post(self):
-        return {"message": "This endpoint only accepts GET requests with images"}
+    def get(self):
+        return {"message": "This endpoint only accepts POST requests with images"}
                 
     def put(self):
-        return {"message": "This endpoint only accepts GET requests with images"}
+        return {"message": "This endpoint only accepts POST requests with images"}
       
     def delete(self):        
-        return {"message": "This endpoint only accepts GET requests with images"}
+        return {"message": "This endpoint only accepts POST requests with images"}
     
-    def get(self):
-        try:            
+    def post(self):
+        try:
+            
+            if not reqparse.request.files:
+                return {
+                    "error": "No files received",
+                    "help": f"Please send an image file using the field name image"
+                }, 400
+
+            # Get the field names that were actually sent
+            received_fields = list(reqparse.request.files.keys())
+            
+            # Check if we received wrong field name
+            if 'image' not in received_fields:
+                return {
+                    "error": f"Image field image not found in request",
+                    "received_fields": received_fields,
+                    "help": f"Please use image as the field name. Example: -F 'image=@your_image.jpg'"
+                }, 400                        
             args = portrait_request_args.parse_args()
+            
+            #if 'image' not in args:
+            #    abort(400, message="No image uploaded. Please supply an image in the 'image' field")
             
             image_file = args['image']
             
@@ -46,11 +66,13 @@ class Portrait(Resource):
             # Convert the uploaded file to an image array
             file_bytes = np.frombuffer(image_file.read(), np.uint8)
             image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-            
+                
             if image is None:
                 abort(400, message="No Image Uploaded")
-            
-            
+        except Exception as e: # in case of any unexpected errors
+          abort(500, message="Internal server error loading image: " + str(e))
+        
+        try:    
             face_cascade = cv2.CascadeClassifier(   #good lightwieght face detector for portrait detection
                 cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
             )
@@ -87,6 +109,10 @@ class Portrait(Resource):
             _, image_encoded = cv2.imencode('.png', face_image)
             image_base64 = base64.b64encode(image_encoded).decode('utf-8')
             
+        except Exception as e: # in case of any unexpected errors
+          abort(500, message="Internal server error processing image: " + str(e)) 
+                
+        try:    
             # save b64 for debug purposes not needed in production
             if(app.debug):
                 save_folder = 'rawdata'
@@ -97,10 +123,11 @@ class Portrait(Resource):
                 with open(os.path.join(save_folder, 'img.out'), 'w') as image_file:
                     image_file.write(image_base64)
         
-        except Exception as e: # in case of any unexpected errors
-          abort(500, message="Internal server error: " + str(e))
+
           
-        return {"base64_image": image_base64, "single_portrait": len(faces)==1}
+            return {"base64_image": image_base64, "single_portrait": len(faces)==1}
+        except Exception as e: # in case of any unexpected errors
+         abort(500, message="Internal server error sending image: " + str(e)) 
 
 api.add_resource(Portrait, "/portrait_extract/")
 @app.route("/")
