@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_restful import Api, Resource, reqparse, fields, abort
 from werkzeug.datastructures import FileStorage
 import os
@@ -38,10 +38,11 @@ class Portrait(Resource):
     def post(self):
         try:
             
-            if not reqparse.request.files:
+            if not request.files:
                 return {
                     "error": "No files received",
-                    "help": f"Please send an image file using the field name image"
+                    "help": f"Please send an image file using the field name image",
+                    "logs": f"{request.files}"
                 }, 400
 
             # Get the field names that were actually sent
