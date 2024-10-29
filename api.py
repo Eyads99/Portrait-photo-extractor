@@ -48,8 +48,8 @@ class Portrait(Resource):
             # Get the field names that were actually sent
             received_fields = list(reqparse.request.files.keys())
             
-            # Check if we received wrong field name
-            if 'image' not in received_fields:
+            # Check if we received an image field or not
+            if 'image' not in received_fields: # return error if image field not found and help message
                 return {
                     "error": f"Image field image not found in request",
                     "received_fields": received_fields,
@@ -57,19 +57,24 @@ class Portrait(Resource):
                 }, 400                        
             args = portrait_request_args.parse_args()
             
-            #if 'image' not in args:
-            #    abort(400, message="No image uploaded. Please supply an image in the 'image' field")
             
-            image_file = args['image']
+            image_file = args['image']  # Get the uploaded file and check if it is an approporate file type
             
             if image_file and image_file.filename.split('.')[-1].lower() not in ['png', 'jpg', 'jpeg']:
-                abort(400, message="Invalid image type. Only PNG, JPG, JPEG are supported")            
+                return {
+                    "error": f"Image field has unsupported image type",
+                    "received_fields": received_fields,
+                    "help": f"Please use image type jpg, jpeg or png"
+                }, 400                
             # Convert the uploaded file to an image array
             file_bytes = np.frombuffer(image_file.read(), np.uint8)
             image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
                 
             if image is None:
-                abort(400, message="No Image Uploaded")
+                return {
+                    "error": f"Image field is empty",
+                    "help": f"the uploaded image had no data, please check the file and upload again"
+                }, 400  
         except Exception as e: # in case of any unexpected errors
           abort(500, message="Internal server error loading image: " + str(e))
         
@@ -90,7 +95,10 @@ class Portrait(Resource):
             )
             
             if len(faces) == 0:
-                abort(400, message="No faces detected in the image")            
+                return {
+                    "error": f"No portrait was detected in the image",
+                    "help": f"Please ensure the correct file was uploaded"
+                }, 400             
             
             # Get the first face detected
             x, y, w, h = faces[0]

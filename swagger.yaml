@@ -11,8 +11,8 @@ servers:
 paths:
   /portrait_extract/:
     post:
-      summary: Extracts and processes portrait images from uploaded files.
-      description: Accepts a portrait image file, detects a portrait and returns the processed image in Base64 format.
+      summary: Extract and process a portrait image.
+      description: Accepts an image file, detects a face, crops the face region, and returns it as a Base64-encoded image.
       requestBody:
         required: true
         content:
@@ -26,7 +26,7 @@ paths:
                   description: The portrait image file (PNG, JPG, or JPEG format).
       responses:
         '200':
-          description: Successfully processed the image.
+          description: Portrait image successfully processed.
           content:
             application/json:
               schema:
@@ -34,12 +34,12 @@ paths:
                 properties:
                   base64_image:
                     type: string
-                    description: The processed portrait image encoded in Base64.
+                    description: Base64-encoded portrait image.
                   single_portrait:
                     type: boolean
-                    description: Indicates whether only one face was detected in the image.
+                    description: Indicates if only one face was detected in the image.
         '400':
-          description: Bad Request, invalid input or no face detected.
+          description: Invalid input or no face detected.
           content:
             application/json:
               schema:
@@ -47,9 +47,12 @@ paths:
                 properties:
                   error:
                     type: string
-                    description: Error message explaining the issue.
+                    description: Description of the error.
+                  help:
+                    type: string
+                    description: Suggestion to correct the request format.
         '500':
-          description: Internal server error during processing.
+          description: Server error during image processing.
           content:
             application/json:
               schema:
@@ -57,15 +60,15 @@ paths:
                 properties:
                   error:
                     type: string
-                    description: Error message explaining the server issue.
+                    description: Error message detailing the server issue.
 
   /docs:
     get:
       summary: API Documentation
-      description: Returns API documentation details.
+      description: Returns documentation details for the API.
       responses:
         '200':
-          description: Documentation returned successfully.
+          description: Documentation content returned successfully.
           content:
             text/html:
               schema:
