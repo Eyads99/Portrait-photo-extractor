@@ -49,7 +49,7 @@ class Portrait(Resource):
             received_fields = list(reqparse.request.files.keys())
             
             # Check if we received an image field or not
-            if 'image' not in received_fields: # return error if image field not found and help message
+            if 'image' not in received_fields or not image_file: # return error if image field not found and help message
                 return {
                     "error": f"Image field image not found in request",
                     "received_fields": received_fields,
