@@ -62,8 +62,8 @@ class Portrait(Resource):
             
             image_file = args['image']
             
-            if image_file and image_file.filename.split('.')[-1].lower() not in ['png', 'jpg', 'jpeg', 'gif']:
-                abort(400, message="Invalid image type. Only PNG, JPG, JPEG and gif are supported")            
+            if image_file and image_file.filename.split('.')[-1].lower() not in ['png', 'jpg', 'jpeg']:
+                abort(400, message="Invalid image type. Only PNG, JPG, JPEG are supported")            
             # Convert the uploaded file to an image array
             file_bytes = np.frombuffer(image_file.read(), np.uint8)
             image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)

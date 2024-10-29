@@ -1,0 +1,84 @@
+openapi: 3.0.0
+info:
+  title: Portrait Extractor API
+  description: API for extracting and processing portrait images.
+  version: 1.0.0
+
+servers:
+  - url: https://pe-1028326783113.us-central1.run.app
+
+
+paths:
+  /portrait_extract/:
+    post:
+      summary: Extracts and processes portrait images from uploaded files.
+      description: Accepts a portrait image file, detects a portrait and returns the processed image in Base64 format.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: The portrait image file (PNG, JPG, or JPEG format).
+      responses:
+        '200':
+          description: Successfully processed the image.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  base64_image:
+                    type: string
+                    description: The processed portrait image encoded in Base64.
+                  single_portrait:
+                    type: boolean
+                    description: Indicates whether only one face was detected in the image.
+        '400':
+          description: Bad Request, invalid input or no face detected.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining the issue.
+        '500':
+          description: Internal server error during processing.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining the server issue.
+
+  /docs:
+    get:
+      summary: API Documentation
+      description: Returns API documentation details.
+      responses:
+        '200':
+          description: Documentation returned successfully.
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /:
+    get:
+      summary: API Index
+      description: Returns a welcome message and directs users to the documentation.
+      responses:
+        '200':
+          description: Welcome message returned successfully.
+          content:
+            text/plain:
+              schema:
+                type: string
